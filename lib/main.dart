@@ -193,17 +193,20 @@ $transcript''';
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Anamnese Analyse'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF1B6FA8)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            tooltip: 'Analyse starten',
-            onPressed: _loading ? null : _analyzeTranscript,
-          ),
           IconButton(
             icon: const Icon(Icons.share),
             tooltip: 'Als CSV teilen',
             onPressed: _loading ? null : _exportCsv,
+          ),
+          IconButton(
+            icon: const Icon(Icons.check),
+            tooltip: 'Analyse starten',
+            onPressed: _loading ? null : _analyzeTranscript,
           ),
         ],
       ),
@@ -214,18 +217,17 @@ $transcript''';
               padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: _controller,
-                maxLines: 8,
-                decoration: const InputDecoration(
-                  labelText: 'Transkript einfügen',
-                  border: OutlineInputBorder(),
+                minLines: 6,
+                maxLines: 10,
+                decoration: InputDecoration(
+                  hintText: 'Schreibe oder spreche deinen Text hier ...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
                 ),
               ),
             ),
-            if (_loading)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: CircularProgressIndicator(),
-              ),
             if (_errorMessage != null)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -235,23 +237,63 @@ $transcript''';
                 ),
               ),
             Expanded(
-              child: _answers.isEmpty
+              child: _loading
                   ? const Center(
-                      child: Text('Keine Ergebnisse vorhanden.'),
+                      child: CircularProgressIndicator(strokeWidth: 6),
                     )
-                  : ListView.separated(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _answers.length,
-                      separatorBuilder: (_, __) =>
-                          const Divider(height: 24),
-                      itemBuilder: (context, index) {
-                        final item = _answers[index];
-                        return ListTile(
-                          title: Text(item.linkId),
-                          subtitle: Text(item.answer),
-                        );
-                      },
-                    ),
+                  : _answers.isEmpty
+                      ? const Center(
+                          child: Text('Keine Ergebnisse vorhanden.'),
+                        )
+                      : ListView.separated(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          itemCount: _answers.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 16),
+                          itemBuilder: (context, index) {
+                            final item = _answers[index];
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item.linkId,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          item.answer,
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    value: false,
+                                    onChanged: (_) {},
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
             ),
           ],
         ),
