@@ -1,0 +1,9 @@
+.dart_tool/
+.packages
+.pub/
+build/
+.DS_Store
+.android/
+.ios/
+.flutter-plugins
+.flutter-plugins-dependencies

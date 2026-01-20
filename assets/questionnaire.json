@@ -1,0 +1,20 @@
+{
+  "resourceType": "Questionnaire",
+  "id": "anamnesis-questionnaire",
+  "item": [
+    {
+      "linkId": "1",
+      "text": "Haben Sie Schmerzen?",
+      "type": "choice",
+      "answerOption": [
+        {"valueString": "ja"},
+        {"valueString": "nein"}
+      ]
+    },
+    {
+      "linkId": "2",
+      "text": "Beschreiben Sie die Ursache für Ihren Besuch.",
+      "type": "string"
+    }
+  ]
+}
