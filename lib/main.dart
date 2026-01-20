@@ -128,13 +128,6 @@ class _AnamnesisHomePageState extends State<AnamnesisHomePage> {
         : normalized;
     final decoded = jsonDecode(jsonBody);
 
-    if (decoded is List) {
-      return decoded
-          .whereType<Map<String, dynamic>>()
-          .map(AnswerItem.fromJson)
-          .toList();
-    }
-
     if (decoded is Map<String, dynamic>) {
       final list = decoded['answers'] ?? decoded['items'];
       if (list is List) {
@@ -143,6 +136,21 @@ class _AnamnesisHomePageState extends State<AnamnesisHomePage> {
             .map(AnswerItem.fromJson)
             .toList();
       }
+
+      return decoded.entries
+          .where((entry) => entry.value != null)
+          .map((entry) => AnswerItem(
+                linkId: entry.key,
+                answer: entry.value.toString(),
+              ))
+          .toList();
+    }
+
+    if (decoded is List) {
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(AnswerItem.fromJson)
+          .toList();
     }
 
     throw Exception('Antwort konnte nicht geparst werden.');
@@ -152,7 +160,9 @@ class _AnamnesisHomePageState extends State<AnamnesisHomePage> {
     return '''Bitte analysiere das folgende Transkript eines Patienteninterviews.
 Nutze den Fragebogen im JSON-Format, um Antworten für jede Frage zu ermitteln.
 Wähle bei vorgegebenen Antwortmöglichkeiten die passendste Option.
-Gib deine Antworten als JSON-Liste aus, wobei jedes Element "linkId" und "answer" enthält.
+Gib deine Antworten als JSON-Objekt aus, das ein Feld "answers" enthält.
+Dieses Feld ist eine Liste, bei der jedes Element "linkId" und "answer" enthält.
+Gib ausschließlich gültiges JSON zurück, ohne Markdown oder erklärenden Text.
 
 FRAGEBOGEN:
 $questionnaire
@@ -245,54 +255,67 @@ $transcript''';
                       ? const Center(
                           child: Text('Keine Ergebnisse vorhanden.'),
                         )
-                      : ListView.separated(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          itemCount: _answers.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 16),
-                          itemBuilder: (context, index) {
-                            final item = _answers[index];
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                              child: Text(
+                                'Ergebnisse',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          item.linkId,
-                                          style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          item.answer,
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Checkbox(
-                                    value: false,
-                                    onChanged: (_) {},
+                            ),
+                            Expanded(
+                              child: ListView.separated(
+                                padding:
+                                    const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                                itemCount: _answers.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (context, index) {
+                                  final item = _answers[index];
+                                  return Card(
+                                    elevation: 0,
+                                    color: Colors.grey.shade100,
                                     shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(4),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                  ),
-                                ],
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 12,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            item.linkId,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 6),
+                                          Text(
+                                            item.answer,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            );
-                          },
+                            ),
+                          ],
                         ),
             ),
           ],
